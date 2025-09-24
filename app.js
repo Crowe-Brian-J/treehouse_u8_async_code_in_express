@@ -22,7 +22,18 @@ const getUsers = () => {
   })
 }
 
-app.get('/', (req, res) => {
+// Use middleware to wrap try/catch block
+const asyncHandler = (cb) => {
+  return async (req, res, next) => {
+    try {
+      await cb(req, res, next)
+    } catch (err) {
+      res.render('error', { error: err })
+    }
+  }
+}
+
+/* app.get('/', (req, res) => {
   // Chained instead of nested functions
   getUsers()
     .then((users) => {
@@ -31,6 +42,15 @@ app.get('/', (req, res) => {
     .catch((err) => {
       res.render('error', { error: err })
     })
-})
+}) */
+
+// Refactor using async/await -> Then refactor with middleware w/ async/await
+app.get(
+  '/',
+  asyncHandler(async (req, res) => {
+    const users = await getUsers()
+    res.render('index', { title: 'Users', users: users.users })
+  })
+)
 
 app.listen(3000, () => console.log('App listening on port 3000!'))
